@@ -39,7 +39,7 @@ public abstract class BaseTests {
         driver = new ChromeDriver();
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));
+        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(20));
         driver.manage().window().maximize();
         topNavPage = new TopNavPage(driver, wait);
         pageHelper = new PageHelper(driver, wait);

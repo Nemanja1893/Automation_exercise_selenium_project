@@ -7,7 +7,7 @@ import org.testng.annotations.Test;
 
 public class ProductTests extends BaseTests {
 
-    @Test(priority = 1)
+    @Test(priority = 10)
     @Description("Verify All Products and product detail page")
     public void verifyProductsPage(){
         pageHelper.waitForPageVisibility("/html");
@@ -34,28 +34,33 @@ public class ProductTests extends BaseTests {
         wait.until(ExpectedConditions.visibilityOf(productDetailsPage.getProductBrand()));
 
     }
-    @Test(priority = 2)
+    @Test(priority = 20)
     @Description("Verify all the products related to search are visible")
     public void searchProduct(){
+        String searchInput = "blue";
+
         pageHelper.waitForPageVisibility("/html");
         topNavPage.getProductsLink().click();
 
         driver.navigate().to(baseUrl+"products");
         CheckUrl("products");
 
-        productsPage.getProductSearchInput().sendKeys("Blue");
+        productsPage.getProductSearchInput().sendKeys(searchInput);
         productsPage.getProductSearchButton().click();
 
         wait.until(ExpectedConditions.visibilityOf(productsPage.getAllProductsDiv()));
 
-        for (int i = 0; i < productsPage.getAllSearchedProducts().size(); i++) {
-            wait.until(ExpectedConditions.visibilityOf(productsPage.getAllSearchedProducts().get(i)));
-        }
+        for (int i = 0; i < productsPage.getAllDisplayedProducts().size(); i++) {
+            wait.until(ExpectedConditions.visibilityOf(productsPage.getAllDisplayedProducts().get(i)));
 
+            Assert.assertTrue(productsPage.getAllDisplayedProductsName().get(i)
+                            .getText().toLowerCase().contains(searchInput),
+                    "Product's name does not contain value from search input");
+        }
     }
-    @Test(priority = 3)
-    @Description("Add Products in Cart")
-    public void AddProductsToCart(){
+    @Test(priority = 90)
+    @Description("Remove products from cart")
+    public void removeProductsFromCart(){
         pageHelper.waitForPageVisibility("/html");
         topNavPage.getProductsLink().click();
 
@@ -63,18 +68,50 @@ public class ProductTests extends BaseTests {
         CheckUrl("products");
 
         actions.scrollByAmount(0,400).perform();
-        actions.moveToElement(productsPage.getAllSearchedProducts().get(0)).perform();
-
+        actions.moveToElement(productsPage.getAllDisplayedProducts().get(0)).perform();
 
         wait.until(ExpectedConditions.elementToBeClickable(productsPage
-                        .getProductOverlayAddToCartLinks().get(0)))
+                        .getAddToCartButtons().get(0)))
+                .click();
+
+        productsPage.getViewCartLink().click();
+
+        CheckUrl("view_cart");
+
+        for (int i = 0; i < cartPage.getProductsInCart().size(); i++) {
+//            cartPage.getProductRemoveButtons(1).click();
+            wait.until(ExpectedConditions
+                    .elementToBeClickable(cartPage
+                            .getProductRemoveButtons(1))).click();
+//            cartPage.getProductsInCart().remove(i);
+        }
+        cartPage.waitForProductsToBeRemoved();
+        Assert.assertEquals(cartPage.getProductsInCart().size(), 0,
+                "Cart is not empty");
+
+    }
+    @Test(priority = 30)
+    @Description("Add Products in Cart")
+    public void AddProductsInCart(){
+        int productIndex = 1;
+        pageHelper.waitForPageVisibility("/html");
+        topNavPage.getProductsLink().click();
+
+        driver.navigate().to(baseUrl+"products");
+        CheckUrl("products");
+
+        actions.scrollByAmount(0,400).perform();
+        actions.moveToElement(productsPage.getAllDisplayedProducts().get(0)).perform();
+
+        wait.until(ExpectedConditions.elementToBeClickable(productsPage
+                        .getAddToCartButtons().get(0)))
                         .click();
 
         productsPage.getContinueShoppingButton().click();
 
-        actions.moveToElement(productsPage.getAllSearchedProducts().get(1)).perform();
+        actions.moveToElement(productsPage.getAllDisplayedProducts().get(1)).perform();
         wait.until(ExpectedConditions.elementToBeClickable(productsPage
-                        .getProductOverlayAddToCartLinks().get(1)))
+                        .getAddToCartButtons().get(1)))
                 .click();
 
         productsPage.getViewCartLink().click();
@@ -87,10 +124,11 @@ public class ProductTests extends BaseTests {
         for (int i = 1; i <= cartPage.getProductsInCart().size(); i++) {
             wait.until(ExpectedConditions.visibilityOfAllElements(cartPage.getProductInCartElements(i)));
         }
+
     }
-    @Test(priority = 4)
+    @Test(priority = 80)
     @Description("Verify Product quantity in Cart")
-    public void productQuantityInCart(){
+    public void productQuantityInCart() throws InterruptedException {
         pageHelper.waitForPageVisibility("/html");
 
         actions.scrollByAmount(0,650).perform();
@@ -106,14 +144,127 @@ public class ProductTests extends BaseTests {
         productDetailsPage.getAddToCartButton().click();
 
         productsPage.getViewCartLink().click();
+
         CheckUrl("view_cart");
 
 
         for (int i = 0; i < cartPage.getProductsInCart().size(); i++) {
             wait.until(ExpectedConditions.visibilityOf(cartPage.getProductsInCart().get(i)));
-            Assert.assertEquals(cartPage.getProductsInCart().get(i).getAttribute("button"),"4",
+            Assert.assertEquals(cartPage.getQuantityButton(i + 1).getText(),"4",
                     "Quantity value is incorrect");
         }
+
     }
+    @Test(priority = 50)
+    @Description("View & Cart Brand Products")
+    public void verifyBrandsAreVisible(){
+        int firstCategory = 6;
+        int secondCategory = 5;
+        pageHelper.waitForPageVisibility("/html");
+        topNavPage.getProductsLink().click();
+
+        driver.navigate().to(baseUrl+"products");
+        CheckUrl("products");
+        actions.scrollByAmount(0, 650).perform();
+
+        wait.until(ExpectedConditions.visibilityOf(productsPage.getBrandsDiv()));
+        productsPage.getFirstBrandLink().click();
+
+        Assert.assertTrue(driver.getCurrentUrl().contains("brand_products"),
+                "It is not brand product page");
+        Assert.assertEquals(productsPage.getAllDisplayedProducts().size(), firstCategory,
+                "The number of displayed brand products is incorrect");
+
+        productsPage.getSecondBrandLink().click();
+
+        Assert.assertTrue(driver.getCurrentUrl().contains("brand_products"),
+                "It is not brand product page");
+        Assert.assertEquals(productsPage.getAllDisplayedProducts().size(), secondCategory,
+                "The number of displayed brand products is incorrect");
+    }
+    @Test(priority = 60)
+    @Description("View Category Products")
+    public void verifyCategoriesAreVisible(){
+        String dressCatTitle = "WOMEN - DRESS PRODUCTS";
+        String tShirtCatTitle = "MEN - TSHIRTS PRODUCTS";
+
+        pageHelper.waitForPageVisibility("/html");
+        topNavPage.getProductsLink().click();
+
+        driver.navigate().to(baseUrl+"products");
+        CheckUrl("products");
+        actions.scrollByAmount(0, 500).perform();
+
+        wait.until(ExpectedConditions.visibilityOf(productsPage.getCategoryDiv()));
+        productsPage.getWomenCategoryLink().click();
+        wait.until(ExpectedConditions.elementToBeClickable(productsPage.getDressLink())).click();
+
+        Assert.assertEquals(productsPage.getTitleText().getText(), dressCatTitle,
+                "Page title is incorrect");
+
+        productsPage.getMenCategoryLink().click();
+        wait.until(ExpectedConditions.elementToBeClickable(productsPage.getTshirtLink())).click();
+
+        Assert.assertEquals(productsPage.getTitleText().getText(), tShirtCatTitle,
+                "Page title is incorrect");
+    }
+    @Test(priority = 70)
+    @Description("Search Products and Verify Cart After Login")
+    public void addSearchProductsToCart(){
+        String searchInput = "blue";
+        int expectedNumOfProducts = 7;
+
+        pageHelper.waitForPageVisibility("/html");
+        topNavPage.getProductsLink().click();
+
+        driver.navigate().to(baseUrl+"products");
+        CheckUrl("products");
+
+
+        productsPage.getProductSearchInput().sendKeys(searchInput);
+        productsPage.getProductSearchButton().click();
+
+        actions.scrollByAmount(0, 500).perform();
+        wait.until(ExpectedConditions.visibilityOf(productsPage.getAllProductsDiv()));
+
+        for (int i = 0; i < productsPage.getAllDisplayedProducts().size(); i++) {
+            wait.until(ExpectedConditions.visibilityOf(productsPage.getAllDisplayedProducts().get(i)));
+
+            Assert.assertTrue(productsPage.getAllDisplayedProductsName().get(i)
+                            .getText().toLowerCase().contains(searchInput),
+                    "Product's name does not contain value from search input");
+            actions.moveToElement(productsPage.getAllDisplayedProducts().get(i)).perform();
+
+            if(i % 3 == 0){
+                actions.scrollByAmount(0,565).perform();
+            }
+
+            wait.until(ExpectedConditions.elementToBeClickable(productsPage
+                            .getAddToCartButtons().get(i)))
+                            .click();
+            productsPage.getContinueShoppingButton().click();
+        }
+        topNavPage.getCartLink().click();
+
+        Assert.assertEquals(cartPage.getProductsInCart().size(), expectedNumOfProducts,
+                "Number of products in cart is incorrect");
+
+        topNavPage.getLoginLink().click();
+
+        wait.until(ExpectedConditions.visibilityOf(loginPage.getLoginForm()));
+        loginPage.getEmailInput().sendKeys("gcsejn@gmail.com");
+        loginPage.getPasswordInput().sendKeys("pass123");
+        loginPage.getLoginButton().click();
+
+        topNavPage.getCartLink().click();
+        Assert.assertEquals(cartPage.getProductsInCart().size(), expectedNumOfProducts,
+                "Number of products in cart is incorrect");
+
+
+    }
+
+
+
+
 
 }
