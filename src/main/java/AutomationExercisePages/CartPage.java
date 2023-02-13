@@ -20,8 +20,9 @@ public class CartPage extends BasePage{
     public List<WebElement> getProductInCartElements(int productIndex){
         return driver.findElements(By.xpath("//tbody/tr["+productIndex+"]/td"));
     }
-    public WebElement getProductRemoveButtons(int productIndex){
-        return driver.findElement(By.xpath("//tbody/tr["+productIndex+"]/td[6]"));
+    public List<WebElement> getProductRemoveButtons(){
+//        return driver.findElement(By.xpath("//tbody/tr["+productIndex+"]/td[6]"));
+        return driver.findElements(By.cssSelector(".cart_quantity_delete"));
     }
     public WebElement getQuantityButton(int productIndex){
         return driver.findElement(By.xpath("//tbody/tr["+productIndex+"]/td/button"));

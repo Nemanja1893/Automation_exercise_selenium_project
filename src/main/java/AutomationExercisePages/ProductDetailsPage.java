@@ -35,4 +35,22 @@ public class ProductDetailsPage extends BasePage{
     public WebElement getAddToCartButton(){
         return driver.findElement(By.cssSelector(".cart"));
     }
+    public WebElement getReviewProductDiv(){
+        return driver.findElement(By.cssSelector(".shop-details-tab"));
+    }
+    public WebElement getNameInput(){
+        return driver.findElement(By.cssSelector("#name"));
+    }
+    public WebElement getEmailInput(){
+        return driver.findElement(By.cssSelector("#email"));
+    }
+    public WebElement getReviewTextarea(){
+        return driver.findElement(By.cssSelector("#review"));
+    }
+    public WebElement getSubmitReviewButton(){
+        return driver.findElement(By.cssSelector("#button-review"));
+    }
+    public WebElement getSuccessReviewDiv(){
+        return driver.findElement(By.cssSelector("#review-section"));
+    }
 }

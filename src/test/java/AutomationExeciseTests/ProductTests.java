@@ -34,7 +34,7 @@ public class ProductTests extends BaseTests {
         wait.until(ExpectedConditions.visibilityOf(productDetailsPage.getProductBrand()));
 
     }
-    @Test(priority = 20)
+    @Test(priority = 40)
     @Description("Verify all the products related to search are visible")
     public void searchProduct(){
         String searchInput = "blue";
@@ -58,7 +58,7 @@ public class ProductTests extends BaseTests {
                     "Product's name does not contain value from search input");
         }
     }
-    @Test(priority = 90)
+    @Test(priority = 70)
     @Description("Remove products from cart")
     public void removeProductsFromCart(){
         pageHelper.waitForPageVisibility("/html");
@@ -78,19 +78,27 @@ public class ProductTests extends BaseTests {
 
         CheckUrl("view_cart");
 
-        for (int i = 0; i < cartPage.getProductsInCart().size(); i++) {
-//            cartPage.getProductRemoveButtons(1).click();
-            wait.until(ExpectedConditions
-                    .elementToBeClickable(cartPage
-                            .getProductRemoveButtons(1))).click();
-//            cartPage.getProductsInCart().remove(i);
+//        for (int i = 0; i < cartPage.getProductsInCart().size(); i++) {
+////            cartPage.getProductRemoveButtons(1).click();
+//            wait.until(ExpectedConditions
+//                    .elementToBeClickable(cartPage
+//                            .getProductRemoveButtons(1))).click();
+////            cartPage.getProductsInCart().remove(i);
+//        }
+//        actions.scrollByAmount(0, 300).perform();
+        for (int i = 0; i < cartPage.getProductRemoveButtons().size(); i++) {
+            wait.until(ExpectedConditions.elementToBeClickable(cartPage
+                    .getProductRemoveButtons().get(i)))
+                    .click();
+
+            wait.until(ExpectedConditions.invisibilityOf(cartPage.getProductRemoveButtons().get(i)));
         }
         cartPage.waitForProductsToBeRemoved();
         Assert.assertEquals(cartPage.getProductsInCart().size(), 0,
                 "Cart is not empty");
 
     }
-    @Test(priority = 30)
+    @Test(priority = 50)
     @Description("Add Products in Cart")
     public void AddProductsInCart(){
         int productIndex = 1;
@@ -124,9 +132,15 @@ public class ProductTests extends BaseTests {
         for (int i = 1; i <= cartPage.getProductsInCart().size(); i++) {
             wait.until(ExpectedConditions.visibilityOfAllElements(cartPage.getProductInCartElements(i)));
         }
-
+        //remove products from cart
+        for (int i = 0; i < cartPage.getProductRemoveButtons().size(); i++) {
+            cartPage.getProductRemoveButtons().get(i).click();
+        }
+        cartPage.waitForProductsToBeRemoved();
+        Assert.assertEquals(cartPage.getProductsInCart().size(), 0,
+                "Cart is not empty");
     }
-    @Test(priority = 80)
+    @Test(priority = 60)
     @Description("Verify Product quantity in Cart")
     public void productQuantityInCart() throws InterruptedException {
         pageHelper.waitForPageVisibility("/html");
@@ -153,9 +167,12 @@ public class ProductTests extends BaseTests {
             Assert.assertEquals(cartPage.getQuantityButton(i + 1).getText(),"4",
                     "Quantity value is incorrect");
         }
+        for (int i = 0; i < cartPage.getProductRemoveButtons().size(); i++) {
+            cartPage.getProductRemoveButtons().get(i).click();
+        }
 
     }
-    @Test(priority = 50)
+    @Test(priority = 30)
     @Description("View & Cart Brand Products")
     public void verifyBrandsAreVisible(){
         int firstCategory = 6;
@@ -165,7 +182,7 @@ public class ProductTests extends BaseTests {
 
         driver.navigate().to(baseUrl+"products");
         CheckUrl("products");
-        actions.scrollByAmount(0, 650).perform();
+        actions.scrollByAmount(0, 660).perform();
 
         wait.until(ExpectedConditions.visibilityOf(productsPage.getBrandsDiv()));
         productsPage.getFirstBrandLink().click();
@@ -182,7 +199,7 @@ public class ProductTests extends BaseTests {
         Assert.assertEquals(productsPage.getAllDisplayedProducts().size(), secondCategory,
                 "The number of displayed brand products is incorrect");
     }
-    @Test(priority = 60)
+    @Test(priority = 20)
     @Description("View Category Products")
     public void verifyCategoriesAreVisible(){
         String dressCatTitle = "WOMEN - DRESS PRODUCTS";
@@ -208,7 +225,7 @@ public class ProductTests extends BaseTests {
         Assert.assertEquals(productsPage.getTitleText().getText(), tShirtCatTitle,
                 "Page title is incorrect");
     }
-    @Test(priority = 70)
+    @Test(priority = 80)
     @Description("Search Products and Verify Cart After Login")
     public void addSearchProductsToCart(){
         String searchInput = "blue";
@@ -259,8 +276,35 @@ public class ProductTests extends BaseTests {
         topNavPage.getCartLink().click();
         Assert.assertEquals(cartPage.getProductsInCart().size(), expectedNumOfProducts,
                 "Number of products in cart is incorrect");
+    }
+    @Test(priority = 90)
+    @Description("Add review on product")
+    public void addReview(){
+        String name = "Pera";
+        String email = "mail@mail.com";
+        String review = "Added review here";
 
 
+        pageHelper.waitForPageVisibility("/html");
+        topNavPage.getProductsLink().click();
+
+        driver.navigate().to(baseUrl+"products");
+        CheckUrl("products");
+
+        actions.scrollByAmount(0,400).perform();
+        productsPage.getViewProductLinkByShopIndex(1).click();
+        wait.until(ExpectedConditions.visibilityOf(productDetailsPage.getReviewProductDiv()));
+
+        actions.scrollByAmount(0,400).perform();
+        productDetailsPage.getNameInput().sendKeys(name);
+        productDetailsPage.getEmailInput().sendKeys(email);
+        productDetailsPage.getReviewTextarea().sendKeys(review);
+
+        productDetailsPage.getSubmitReviewButton().click();
+
+        Assert.assertEquals(productDetailsPage.getSuccessReviewDiv().getText(),
+                "Thank you for your review.",
+                "Success message is incorrect");
     }
 
 

@@ -30,6 +30,7 @@ public abstract class BaseTests {
     protected ProductsPage productsPage;
     protected ProductDetailsPage productDetailsPage;
     protected CartPage cartPage;
+    protected RecommendedItemsPage recommendedItemsPage;
 
 
     @BeforeClass
@@ -37,7 +38,7 @@ public abstract class BaseTests {
         System.setProperty("webdriver.chrome.driver", "drivers/chromedriver.exe");
 
         driver = new ChromeDriver();
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(20));
         driver.manage().window().maximize();
@@ -52,6 +53,7 @@ public abstract class BaseTests {
         productsPage = new ProductsPage(driver, wait);
         productDetailsPage = new ProductDetailsPage(driver, wait);
         cartPage = new CartPage(driver, wait);
+        recommendedItemsPage = new RecommendedItemsPage(driver, wait);
 
     }
 
