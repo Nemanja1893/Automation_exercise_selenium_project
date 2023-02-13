@@ -30,5 +30,14 @@ public class CartPage extends BasePage{
     public void waitForProductsToBeRemoved(){
         wait.until(ExpectedConditions.numberOfElementsToBe(By.xpath("//tbody/tr"),0));
     }
+    public WebElement getCheckoutButton(){
+        return driver.findElement(By.cssSelector(".check_out"));
+    }
+    public WebElement getRegisterLink(){
+        //modal link
+        return wait.until(ExpectedConditions
+                .elementToBeClickable(By
+                        .xpath("//*[@class='modal-body']//a")));
+    }
 
 }

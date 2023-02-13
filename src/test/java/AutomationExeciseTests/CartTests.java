@@ -1,9 +1,13 @@
 package AutomationExeciseTests;
 
 import com.sun.org.glassfish.gmbal.Description;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import java.io.File;
+import java.util.function.Function;
 
 public class CartTests extends BaseTests{
 
@@ -26,6 +30,7 @@ public class CartTests extends BaseTests{
                 .getAttribute("data-product-id"),
                 dataProductId,
                 "It is not the right product");
+
     }
     @Test(priority = 20)
     @Description("Remove products from cart")
@@ -130,7 +135,6 @@ public class CartTests extends BaseTests{
 
         CheckUrl("view_cart");
 
-
         for (int i = 0; i < cartPage.getProductsInCart().size(); i++) {
             wait.until(ExpectedConditions.visibilityOf(cartPage.getProductsInCart().get(i)));
             Assert.assertEquals(cartPage.getQuantityButton(i + 1).getText(),"4",
@@ -139,6 +143,113 @@ public class CartTests extends BaseTests{
         for (int i = 0; i < cartPage.getProductRemoveButtons().size(); i++) {
             cartPage.getProductRemoveButtons().get(i).click();
         }
+    }
+    @Test(priority = 50)
+    @Description("Download Invoice after purchase order")
+    public void downloadInvoice(){
+        String email = "newmail_4@mail.com";
+        String name = "Pera";
+
+        pageHelper.waitForPageVisibility("/html");
+
+        driver.navigate().to(baseUrl+"products");
+
+        actions.scrollByAmount(0,400).perform();
+        actions.moveToElement(productsPage.getAllDisplayedProducts().get(0)).perform();
+
+        wait.until(ExpectedConditions.elementToBeClickable(productsPage
+                        .getAddToCartButtons().get(0)))
+                .click();
+
+        productsPage.getContinueShoppingButton().click();
+        topNavPage.getCartLink().click();
+        CheckUrl("view_cart");
+
+        cartPage.getCheckoutButton().click();
+        cartPage.getRegisterLink().click();
+
+        newUserPage.getEmailInput().sendKeys(email);
+        newUserPage.getNameInput().sendKeys(name);
+        newUserPage.getSignupButton().click();
+
+        accountInfoPage.getPasswordInput().sendKeys("pass123");
+
+        accountInfoPage.getDayFromDateOfBirth().sendKeys("4");
+        accountInfoPage.getMonthFromDateOfBirth().sendKeys("May");
+        accountInfoPage.getYearFromDateOfBirth().sendKeys("1995");
+
+        actions.scrollToElement(accountInfoPage.getZipCodeInput()).perform();
+
+        wait.until(ExpectedConditions.elementToBeClickable(accountInfoPage.getNewsletterInput()));
+        accountInfoPage.getNewsletterInput().click();
+
+        wait.until(ExpectedConditions.elementToBeClickable(accountInfoPage.getSpecialOfferInput()));
+        accountInfoPage.getSpecialOfferInput().click();
+
+        accountInfoPage.getFirstNameInput().sendKeys("Pera");
+        accountInfoPage.getLasttNameInput().sendKeys("Peric");
+        accountInfoPage.getCompanyInput().sendKeys("CoolCompany");
+        accountInfoPage.getAddress1Input().sendKeys("address1 street");
+        accountInfoPage.getAddress2Input().sendKeys("address2 avenue");
+        accountInfoPage.getCountryInput().sendKeys("Canada");
+        accountInfoPage.getStateInput().sendKeys("Ontario");
+        accountInfoPage.getCityInput().sendKeys("Toronto");
+        accountInfoPage.getZipCodeInput().sendKeys("1234");
+        accountInfoPage.getMobileNumberInput().sendKeys("5594447224");
+
+        accountInfoPage.getCreateAccountButton().click();
+
+        Assert.assertTrue(driver.getCurrentUrl().contains("/account_created"),"Url is wrong");
+        Assert.assertEquals(accountCreatedPage.getAccountCreatedMessage().getText(),
+                "ACCOUNT CREATED!","Account created message is wrong");
+
+        accountCreatedPage.getContinueButton().click();
+
+        driver.navigate().to(baseUrl);
+
+        wait.until(ExpectedConditions.visibilityOf(topNavPage.getLoggedInLink()));
+
+        topNavPage.getCartLink().click();
+        cartPage.getCheckoutButton().click();
+
+        Assert.assertEquals(checkoutPage.getAccountDetailsH2().getText(), "Address Details",
+                "Message is incorrect");
+        Assert.assertEquals(checkoutPage.getReviewOrderH2().getText(), "Review Your Order",
+                "Message is incorrect");
+
+        actions.scrollByAmount(0,400);
+        checkoutPage.getDescriptionTextarea().sendKeys("Description here");
+        checkoutPage.getPlaceOrderButton().click();
+        CheckUrl("payment");
+
+        String nameOnCard = "Pera Peric";
+        String cardNumber = "2131232131231";
+        String cvc = "344";
+        String expMonth = "11";
+        String expYear = "2025";
+        String successMessage = "Your order has been placed successfully!";
+
+        paymentPage.getNameOnCardInput().sendKeys(nameOnCard);
+        paymentPage.getCardNumberInput().sendKeys(cardNumber);
+        paymentPage.getCvcInput().sendKeys(cvc);
+        paymentPage.getExpirationMonthInput().sendKeys(expMonth);
+        paymentPage.getExpirationYearInput().sendKeys(expYear);
+        paymentPage.getPayButton().click();
+
+//        Assert.assertEquals(paymentPage.getSuccessMessageDiv().getText(),successMessage,
+//                "Success message is incorrect");
+
+
+
+        paymentPage.getDownloadInvoiceLink().click();
+        wait.until(filepresent());
+
+        paymentPage.getContinueButton().click();
+        topNavPage.getDeleteAccountButton().click();
+
+        Assert.assertEquals(accountCreatedPage.getAccountCreatedMessage().getText(),
+                "ACCOUNT DELETED!","Account created message is wrong");
+
 
     }
 

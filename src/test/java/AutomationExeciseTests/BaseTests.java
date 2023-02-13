@@ -4,6 +4,7 @@ import AutomationExercisePages.*;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -11,6 +12,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 
+import java.io.File;
 import java.time.Duration;
 
 public abstract class BaseTests {
@@ -31,6 +33,8 @@ public abstract class BaseTests {
     protected ProductDetailsPage productDetailsPage;
     protected CartPage cartPage;
     protected RecommendedItemsPage recommendedItemsPage;
+    protected CheckoutPage checkoutPage;
+    protected PaymentPage paymentPage;
 
 
     @BeforeClass
@@ -54,7 +58,8 @@ public abstract class BaseTests {
         productDetailsPage = new ProductDetailsPage(driver, wait);
         cartPage = new CartPage(driver, wait);
         recommendedItemsPage = new RecommendedItemsPage(driver, wait);
-
+        checkoutPage = new CheckoutPage(driver, wait);
+        paymentPage = new PaymentPage(driver, wait);
     }
 
     @BeforeMethod
@@ -74,5 +79,17 @@ public abstract class BaseTests {
     public void CheckUrl(String route){
         Assert.assertEquals(driver.getCurrentUrl(), baseUrl+route,"Url is incorrect");
     }
-
+    public ExpectedCondition<Boolean> filepresent() {
+        return new ExpectedCondition<Boolean>() {
+            @Override
+            public Boolean apply(WebDriver driver) {
+                File f = new File("C:\\Users\\Sejn\\Downloads\\invoice.txt");
+                return f.exists();
+            }
+            @Override
+            public String toString() {
+                return "file to be present within the time specified";
+            }
+        };
+    }
 }
