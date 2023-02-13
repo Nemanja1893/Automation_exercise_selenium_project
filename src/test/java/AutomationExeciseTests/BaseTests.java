@@ -35,6 +35,7 @@ public abstract class BaseTests {
     protected RecommendedItemsPage recommendedItemsPage;
     protected CheckoutPage checkoutPage;
     protected PaymentPage paymentPage;
+    protected BottomNavPage bottomNavPage;
 
 
     @BeforeClass
@@ -60,6 +61,7 @@ public abstract class BaseTests {
         recommendedItemsPage = new RecommendedItemsPage(driver, wait);
         checkoutPage = new CheckoutPage(driver, wait);
         paymentPage = new PaymentPage(driver, wait);
+        bottomNavPage = new BottomNavPage(driver, wait);
     }
 
     @BeforeMethod
@@ -81,12 +83,10 @@ public abstract class BaseTests {
     }
     public ExpectedCondition<Boolean> filepresent() {
         return new ExpectedCondition<Boolean>() {
-            @Override
             public Boolean apply(WebDriver driver) {
                 File f = new File("C:\\Users\\Sejn\\Downloads\\invoice.txt");
                 return f.exists();
             }
-            @Override
             public String toString() {
                 return "file to be present within the time specified";
             }

@@ -35,5 +35,8 @@ public class TopNavPage extends BasePage {
     public WebElement getContuctUsLink(){
         return driver.findElement(By.cssSelector("a[href='/contact_us']"));
     }
+    public WebElement getCarouselH2(){
+        return driver.findElement(By.xpath("//*[@id='slider-carousel']/div/div[1]/div[1]/h2"));
+    }
 
 }
